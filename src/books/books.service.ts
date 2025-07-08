@@ -38,7 +38,9 @@ export class BooksService {
       await this.cacheManager.set(cacheKey, dto);
       return dto;
     } catch (error) {
-      this.logger.error(`Failed to fetch book: ${error.message}`);
+      if (error instanceof Error) {
+        this.logger.error(`Failed to fetch book: ${error.message}`);
+      }
       throw error;
     }
   }
@@ -68,7 +70,9 @@ export class BooksService {
       await this.cacheManager.set(cacheKey, dto);
       return dto;
     } catch (error) {
-      this.logger.error(`Failed to search books: ${error.message}`);
+      if (error instanceof Error) {
+        this.logger.error(`Failed to search books: ${error.message}`);
+      }
       throw error;
     }
   }
