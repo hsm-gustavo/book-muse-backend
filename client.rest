@@ -1,0 +1,8 @@
+@baseUrl = http://localhost:3000/api/v1
+
+# Books
+### Get book by ISBN
+GET {{baseUrl}}/books/isbn/9780141182636
+
+### Get books by title
+GET {{baseUrl}}/books/search?q=harry+potter&page=1
