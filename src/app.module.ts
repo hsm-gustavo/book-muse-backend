@@ -11,6 +11,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { envSchema } from './env/env';
 import { EnvModule } from './env/env.module';
 import { EnvService } from './env/env.service';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { EnvService } from './env/env.service';
       }),
       isGlobal: true,
     }),
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
