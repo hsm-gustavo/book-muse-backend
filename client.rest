@@ -18,6 +18,9 @@ Content-Type: application/json
   "password": "securepassword"
 }
 
+### me
+GET {{baseUrl}}/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYmExYzE0YS1iYTFlLTRhY2QtOGNiYS1mODNkYmJhZTdiODYiLCJlbWFpbCI6ImVtYWlsQGV4YW1wbGUuY29tIiwiaWF0IjoxNzUyMTc1OTczLCJleHAiOjE3NTIxNzk1NzMsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCIsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCJ9.jJ8djRun0bIC1hGZp4vRF8CkOxF9A4jz0rOBTeOPaAM
 
 # Auth
 ### Login user
@@ -28,3 +31,4 @@ Content-Type: application/json
   "email": "email@example.com",
   "password": "securepassword"
 }
+
