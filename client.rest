@@ -6,3 +6,25 @@ GET {{baseUrl}}/books/isbn/9780141182636
 
 ### Get books by title
 GET {{baseUrl}}/books/search?q=harry+potter&page=1
+
+# Users
+### Create user
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "email@example.com",
+  "password": "securepassword"
+}
+
+
+# Auth
+### Login user
+POST {{baseUrl}}/auth
+Content-Type: application/json
+
+{
+  "email": "email@example.com",
+  "password": "securepassword"
+}
