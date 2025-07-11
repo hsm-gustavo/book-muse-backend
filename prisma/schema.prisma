@@ -29,6 +29,7 @@ model User {
   following    UserFollow[]     @relation("Following")
   followers    UserFollow[]     @relation("Followers")
   bookStatuses UserBookStatus[]
+  RefreshToken RefreshToken[]
 }
 
 enum Role {
@@ -93,4 +94,14 @@ enum ReadingStatus {
   read
   want_to_read
   abandoned
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
 }

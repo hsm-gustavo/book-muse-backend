@@ -13,6 +13,7 @@ import { EnvModule } from './env/env.module';
 import { EnvService } from './env/env.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { AuthModule } from './auth/auth.module';
     }),
     UsersModule,
     AuthModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

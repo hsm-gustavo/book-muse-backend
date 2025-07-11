@@ -1,4 +1,6 @@
 @baseUrl = http://localhost:3000/api/v1
+@authToken = {{authenticate.response.body.accessToken}}
+@refreshToken = {{authenticate.response.body.refreshToken}}
 
 # Books
 ### Get book by ISBN
@@ -18,12 +20,22 @@ Content-Type: application/json
   "password": "securepassword"
 }
 
+### Update user
+PATCH {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "John Dee"
+}
+
 ### me
 GET {{baseUrl}}/users/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYmExYzE0YS1iYTFlLTRhY2QtOGNiYS1mODNkYmJhZTdiODYiLCJlbWFpbCI6ImVtYWlsQGV4YW1wbGUuY29tIiwiaWF0IjoxNzUyMTc1OTczLCJleHAiOjE3NTIxNzk1NzMsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCIsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCJ9.jJ8djRun0bIC1hGZp4vRF8CkOxF9A4jz0rOBTeOPaAM
+Authorization: Bearer {{authToken}}
 
 # Auth
 ### Login user
+# @name authenticate
 POST {{baseUrl}}/auth
 Content-Type: application/json
 
@@ -32,3 +44,11 @@ Content-Type: application/json
   "password": "securepassword"
 }
 
+### Re auth
+# @name reAuthenticate
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}

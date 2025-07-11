@@ -16,6 +16,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { User } from 'generated/prisma';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -34,7 +35,6 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getMe(@CurrentUser() user: User) {
-    console.log(user);
     return this.usersService.findById(user.id);
   }
 
@@ -44,18 +44,15 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':id')
-  async updateUser(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: CreateUserDto,
-  ) {
-    return this.usersService.update(id, dto);
+  @Patch('me')
+  async updateUser(@CurrentUser() user: User, @Body() dto: UpdateUserDto) {
+    return this.usersService.update(user.id, dto);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete(':id')
+  @Delete('me')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteUser(@Param('id', ParseUUIDPipe) id: string) {
-    return this.usersService.delete(id);
+  async deleteUser(@CurrentUser() user: User) {
+    return this.usersService.delete(user.id);
   }
 }
