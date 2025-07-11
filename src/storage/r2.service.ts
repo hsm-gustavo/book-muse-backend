@@ -1,9 +1,15 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
 import { extname } from 'path';
 import { EnvService } from 'src/env/env.service';
 import { v4 as uuid } from 'uuid';
 import { lookup } from 'mime-types';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 @Injectable()
 export class R2Service {
@@ -44,5 +50,48 @@ export class R2Service {
     const url = `${this.envService.get('R2_ENDPOINT')}/${this.bucket}/${filename}`;
 
     return url;
+  }
+
+  async deleteFile(fileKey: string): Promise<void> {
+    const command = new DeleteObjectCommand({
+      Bucket: this.bucket,
+      Key: fileKey,
+    });
+
+    await this.s3.send(command);
+  }
+
+  async deleteFileByUrl(url: string): Promise<void> {
+    try {
+      const baseUrl = `${this.envService.get('R2_ENDPOINT')}/${this.bucket}/`;
+      const key = url.replace(baseUrl, '');
+
+      const command = new DeleteObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+      });
+
+      await this.s3.send(command);
+    } catch (error) {
+      console.error('Failed to delete previous file:', error);
+    }
+  }
+
+  async getSignedUrl(key: string, expiresInSeconds = 60 * 10): Promise<string> {
+    const command = new GetObjectCommand({
+      Bucket: this.bucket,
+      Key: key.replace('/', ''),
+    });
+
+    const signedUrl = await getSignedUrl(this.s3, command, {
+      expiresIn: expiresInSeconds,
+    });
+
+    return signedUrl;
+  }
+
+  getKeyFromUrl(url: string): string {
+    const baseUrl = `${this.envService.get('R2_ENDPOINT')}/${this.bucket}`;
+    return url.replace(baseUrl, '');
   }
 }

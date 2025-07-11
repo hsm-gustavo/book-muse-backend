@@ -4,12 +4,15 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { HashingService } from 'src/auth/hashing/hashing.service';
+import { R2Service } from 'src/storage/r2.service';
+import { User } from 'generated/prisma';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly hashingService: HashingService,
+    private readonly r2Service: R2Service,
   ) {}
 
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
@@ -68,5 +71,27 @@ export class UsersService {
     await this.prisma.user.delete({
       where: { id },
     });
+  }
+
+  async uploadFile(file: Express.Multer.File, user: User) {
+    const existingUser = await this.findById(user.id);
+
+    if (existingUser.profilePicture) {
+      await this.r2Service.deleteFileByUrl(existingUser.profilePicture);
+    }
+
+    const url = await this.r2Service.uploadFile(file.buffer, file.originalname);
+    return this.update(user.id, { profilePicture: url });
+  }
+
+  async getProfilePictureSignedUrl(userId: string): Promise<string | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user?.profilePicture) return null;
+
+    const key = this.r2Service.getKeyFromUrl(user.profilePicture);
+    return this.r2Service.getSignedUrl(key);
   }
 }
