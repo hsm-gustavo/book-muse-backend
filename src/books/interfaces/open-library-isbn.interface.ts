@@ -12,6 +12,7 @@ export interface OpenLibraryIsbnInterface {
   authors: {
     key: string;
   }[];
+  by_statement: string;
   publish_date: string;
   publishers: string[];
   series: string[];

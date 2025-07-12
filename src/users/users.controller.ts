@@ -56,7 +56,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Patch('me/profile-picture')
   @UseInterceptors(FileInterceptor('file'), ImageUploadInterceptor)
-  async uploadProfilePicture(
+  async updateProfilePicture(
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser() user: User,
   ) {

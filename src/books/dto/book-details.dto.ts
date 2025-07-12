@@ -4,6 +4,7 @@ export class BookDetailsDto {
   title: string;
   subtitle?: string;
   description?: string;
+  byStatement: string;
   authors?: string[];
   publishDate?: string;
   publishers?: string[];
@@ -19,7 +20,7 @@ export class BookDetailsDto {
   };
   workId?: string;
 
-  constructor(data: OpenLibraryIsbnInterface) {
+  constructor(data: OpenLibraryIsbnInterface, authorNames?: string[]) {
     this.title = data.title;
     this.subtitle = data.subtitle;
     this.publishDate = data.publish_date;
@@ -36,11 +37,8 @@ export class BookDetailsDto {
       goodreads: data.identifiers?.goodreads,
       librarything: data.identifiers?.librarything,
     };
-    this.authors =
-      data.authors?.flatMap((a) => {
-        const id = a.key?.split('/').pop();
-        return id ? [id] : [];
-      }) ?? [];
+    this.authors = authorNames ?? [];
+    this.byStatement = data.by_statement;
     this.workId = data.works?.[0]?.key?.split('/').pop();
     this.description = this.extractDescription(data.description);
   }

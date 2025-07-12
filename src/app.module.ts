@@ -36,7 +36,7 @@ import { StorageModule } from './storage/storage.module';
             namespace: 'book-review-platform',
           }),
         ],
-        ttl: 6 * 1000,
+        ttl: 60 * 60 * 1000,
       }),
       isGlobal: true,
     }),

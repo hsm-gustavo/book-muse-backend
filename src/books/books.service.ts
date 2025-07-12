@@ -17,6 +17,37 @@ export class BooksService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
+  async getAuthorNames(authorKeys: string[]): Promise<string[]> {
+    const names: string[] = [];
+
+    for (const key of authorKeys) {
+      const authorId = key.split('/').pop();
+      if (!authorId) continue;
+
+      const cacheKey = `author:${authorId}`;
+      const cached = await this.cacheManager.get<string>(cacheKey);
+      if (cached) {
+        names.push(cached);
+        continue;
+      }
+
+      try {
+        const res = await firstValueFrom(
+          this.httpService.get<{ name: string }>(
+            `https://openlibrary.org/authors/${authorId}.json`,
+          ),
+        );
+        const name = res.data.name;
+        await this.cacheManager.set(cacheKey, name, 60 * 60 * 24); // cache 24h
+        names.push(name);
+      } catch {
+        this.logger.warn(`Failed to fetch author ${authorId}`);
+      }
+    }
+
+    return names;
+  }
+
   async getBookByIsbn(isbn: string) {
     const cacheKey = `book:isbn:${isbn}`;
     const cachedBook = await this.cacheManager.get<BookDetailsDto>(cacheKey);
@@ -30,6 +61,41 @@ export class BooksService {
 
     try {
       const url = `https://openlibrary.org/isbn/${isbn}.json`;
+      const response = await firstValueFrom(
+        this.httpService.get<OpenLibraryIsbnInterface>(url),
+      );
+      const data = response.data;
+
+      const authorKeys = data.authors?.map((a) => a.key) ?? [];
+      const authorNames = await this.getAuthorNames(authorKeys);
+
+      const dto = new BookDetailsDto(
+        data,
+        authorNames.length ? authorNames : undefined,
+      );
+      await this.cacheManager.set(cacheKey, dto);
+      return dto;
+    } catch (error) {
+      if (error instanceof Error) {
+        this.logger.error(`Failed to fetch book: ${error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async getBookByOlid(olid: string) {
+    const cacheKey = `book:olid:${olid}`;
+    const cachedBook = await this.cacheManager.get<BookDetailsDto>(cacheKey);
+
+    if (cachedBook) {
+      this.logger.debug(`Cache hit for OLID: ${olid}`);
+      return cachedBook;
+    }
+
+    this.logger.debug(`Fetching olid ${olid} from Open Library...`);
+
+    try {
+      const url = `https://openlibrary.org/books/${olid}.json`;
       const response = await firstValueFrom(
         this.httpService.get<OpenLibraryIsbnInterface>(url),
       );
@@ -65,7 +131,12 @@ export class BooksService {
       );
       const data = response.data;
 
-      const dto = new BookSearchResponseDto(data, page);
+      const dto = await BookSearchResponseDto.create(
+        data,
+        page,
+        this.httpService,
+        this.cacheManager,
+      );
 
       await this.cacheManager.set(cacheKey, dto);
       return dto;

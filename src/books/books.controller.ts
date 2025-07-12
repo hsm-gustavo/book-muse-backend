@@ -19,6 +19,11 @@ export class BooksController {
     return this.booksService.getBookByIsbn(isbn);
   }
 
+  @Get('olid/:olid')
+  async getBookByOlid(@Param('olid') isbn: string) {
+    return this.booksService.getBookByOlid(isbn);
+  }
+
   @Get('search')
   async searchBooks(
     @Query('q') query: string,

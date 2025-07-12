@@ -6,8 +6,11 @@
 ### Get book by ISBN
 GET {{baseUrl}}/books/isbn/9780141182636
 
+### get by olid
+GET {{baseUrl}}/books/olid/OL82563W
+
 ### Get books by title
-GET {{baseUrl}}/books/search?q=harry+potter&page=1
+GET {{baseUrl}}/books/search?q=I+cant+happen&page=1
 
 # Users
 ### Create user
