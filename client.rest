@@ -1,0 +1,87 @@
+@baseUrl = http://localhost:3000/api/v1
+@authToken = {{authenticate.response.body.accessToken}}
+@refreshToken = {{authenticate.response.body.refreshToken}}
+
+# Books
+### Get book by ISBN
+GET {{baseUrl}}/books/isbn/9780141182636
+
+### get by olid
+GET {{baseUrl}}/books/olid/OL82563W
+
+### Get books by title
+GET {{baseUrl}}/books/search?q=I+cant+happen&page=1
+
+# Users
+### Create user
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "email@example.com",
+  "password": "securepassword"
+}
+
+### s
+GET  {{baseUrl}}/users/search?q=
+
+### Update user
+PATCH {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "John Dee"
+}
+
+### send picture
+PATCH {{baseUrl}}/users/me/profile-picture
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="foto.jpg"
+Content-Type: image/jpeg
+
+< ./foto.jpg
+--boundary--
+
+
+### get picture
+GET {{baseUrl}}/users/me/profile-picture
+Authorization: Bearer {{authToken}}
+
+### me
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{authToken}}
+
+# Auth
+### Login user
+# @name authenticate
+POST {{baseUrl}}/auth
+Content-Type: application/json
+
+{
+  "email": "email@example.com",
+  "password": "securepassword"
+}
+
+### Re auth
+# @name reAuthenticate
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+
+# reviews
+
+###
+GET {{baseUrl}}/reviews/book/OL82563W
+
+###
+
+GET {{baseUrl}}/reviews/86cd7a3f-efac-4508-8ce4-1b8782922ba7
