@@ -15,6 +15,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { StorageModule } from './storage/storage.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { ReadingStatusModule } from './reading-status/reading-status.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { ReviewsModule } from './reviews/reviews.module';
     AuthModule,
     StorageModule,
     ReviewsModule,
+    ReadingStatusModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

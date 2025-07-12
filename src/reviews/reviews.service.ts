@@ -1,7 +1,12 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { ReviewDto } from './dto/review.dto';
 
 @Injectable()
 export class ReviewsService {
@@ -40,28 +45,44 @@ export class ReviewsService {
     });
   }
 
+  async getReviewById(reviewId: string, userId?: string) {
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+      include: { user: true },
+    });
+
+    if (!review) throw new NotFoundException('Review not found');
+
+    const likeCount = await this.prisma.reviewLike.count({
+      where: { reviewId },
+    });
+
+    const likedByMe = userId
+      ? !!(await this.prisma.reviewLike.findUnique({
+          where: {
+            userId_reviewId: { userId, reviewId },
+          },
+        }))
+      : false;
+
+    return new ReviewDto({ review, likeCount, likedByMe });
+  }
+
   async likeReview(userId: string, reviewId: string) {
-    const exists = await this.prisma.reviewLike.findUnique({
+    await this.prisma.reviewLike.create({
+      data: {
+        reviewId,
+        userId,
+      },
+    });
+  }
+
+  async unlikeReview(reviewId: string, userId: string) {
+    await this.prisma.reviewLike.delete({
       where: {
         userId_reviewId: { userId, reviewId },
       },
     });
-
-    if (exists) {
-      await this.prisma.reviewLike.delete({
-        where: { userId_reviewId: { userId, reviewId } },
-      });
-      return { liked: false };
-    }
-
-    // Like
-    await this.prisma.reviewLike.create({
-      data: {
-        userId,
-        reviewId,
-      },
-    });
-    return { liked: true };
   }
 
   async updateReview(userId: string, reviewId: string, dto: UpdateReviewDto) {

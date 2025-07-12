@@ -72,3 +72,13 @@ Content-Type: application/json
 {
   "refreshToken": "{{refreshToken}}"
 }
+
+
+# reviews
+
+###
+GET {{baseUrl}}/reviews/book/OL82563W
+
+###
+
+GET {{baseUrl}}/reviews/86cd7a3f-efac-4508-8ce4-1b8782922ba7

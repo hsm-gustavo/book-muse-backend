@@ -14,6 +14,7 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { User } from 'generated/prisma';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { OptionalJwtAuthGuard } from 'src/auth/guards/optional-jwt-auth.guard';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -39,6 +40,21 @@ export class ReviewsController {
   @Post(':id/like')
   async likeReview(@Param('id') reviewId: string, @CurrentUser() user: User) {
     return this.reviewsService.likeReview(user.id, reviewId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/like')
+  async unlikeReview(@Param('id') reviewId: string, @CurrentUser() user: User) {
+    return this.reviewsService.unlikeReview(reviewId, user.id);
+  }
+
+  @Get(':id')
+  @UseGuards(OptionalJwtAuthGuard)
+  async getReviewById(
+    @Param('id') reviewId: string,
+    @CurrentUser() user?: User,
+  ) {
+    return this.reviewsService.getReviewById(reviewId, user?.id);
   }
 
   @UseGuards(JwtAuthGuard)
