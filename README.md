@@ -2,7 +2,7 @@
 
 BookMuse API is the official backend for BookMuse — a modern social reading and book review platform. This RESTful API, built with NestJS and Prisma, provides all the necessary features for authentication, user management, reviews, reading tracking, social interactions, and more.
 
-> ⚠️ This is a separate backend service and must be run alongside the frontend (Next.js 15 + React 19).
+> ⚠️ This is a separate backend service and must be run alongside the frontend ([frontend repository](https://github.com/hsm-gustavo/book-muse-frontend)).
 
 ---
 
