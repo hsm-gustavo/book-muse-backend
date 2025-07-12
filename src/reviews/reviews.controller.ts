@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -38,12 +40,14 @@ export class ReviewsController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/like')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async likeReview(@Param('id') reviewId: string, @CurrentUser() user: User) {
     return this.reviewsService.likeReview(user.id, reviewId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id/like')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async unlikeReview(@Param('id') reviewId: string, @CurrentUser() user: User) {
     return this.reviewsService.unlikeReview(reviewId, user.id);
   }

@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -21,6 +22,7 @@ import { User } from 'generated/prisma';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageUploadInterceptor } from './interceptors/image-upload.interceptor';
+import { SearchUsersDto } from './dto/search-users.dto';
 
 @Controller('users')
 export class UsersController {
@@ -42,8 +44,13 @@ export class UsersController {
     return this.usersService.findById(user.id);
   }
 
+  @Get('search')
+  async searchUsers(@Query() query: SearchUsersDto) {
+    return this.usersService.searchUsers(query);
+  }
+
   @Get(':id')
-  async getUserById(@Param('id', ParseUUIDPipe) id: string) {
+  async getUserById(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.usersService.findById(id);
   }
 
@@ -75,5 +82,32 @@ export class UsersController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteUser(@CurrentUser() user: User) {
     return this.usersService.delete(user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':userId/follow')
+  follow(@Param('userId') userId: string, @CurrentUser() user: User) {
+    return this.usersService.followUser(user.id, userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':userId/unfollow')
+  unfollow(@Param('userId') userId: string, @CurrentUser() user: User) {
+    return this.usersService.unfollowUser(user.id, userId);
+  }
+
+  @Get(':userId/following')
+  getFollowing(@Param('userId') userId: string) {
+    return this.usersService.getFollowing(userId);
+  }
+
+  @Get(':userId/followers')
+  getFollowers(@Param('userId') userId: string) {
+    return this.usersService.getFollowers(userId);
+  }
+
+  @Get(':userId/follow-counts')
+  async getFollowCounts(@Param('userId') userId: string) {
+    return this.usersService.getFollowCounts(userId);
   }
 }

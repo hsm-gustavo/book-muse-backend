@@ -23,6 +23,9 @@ Content-Type: application/json
   "password": "securepassword"
 }
 
+### s
+GET  {{baseUrl}}/users/search?q=
+
 ### Update user
 PATCH {{baseUrl}}/users/me
 Content-Type: application/json
