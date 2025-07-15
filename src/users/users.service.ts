@@ -13,6 +13,10 @@ import { Prisma, User } from 'generated/prisma';
 import { SearchUsersDto } from './dto/search-users.dto';
 import { UserSearchResultDto } from './dto/user-search-result.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
+import { GetSignedUrlDto } from './dto/get-signed-url.dto';
+import { SearchResponseDto } from './dto/search-response.dto';
+import { FollowResponseDto } from './dto/follow-response.dto';
+import { FollowCountsResponse } from './dto/follow-counts-response.dto';
 
 @Injectable()
 export class UsersService {
@@ -109,18 +113,24 @@ export class UsersService {
     return this.update(user.id, { profilePicture: url });
   }
 
-  async getProfilePictureSignedUrl(userId: string): Promise<string | null> {
+  async getProfilePictureSignedUrl(userId: string): Promise<GetSignedUrlDto> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
 
-    if (!user?.profilePicture) return null;
+    if (!user?.profilePicture) return { url: null };
 
     const key = this.r2Service.getKeyFromUrl(user.profilePicture);
-    return this.r2Service.getSignedUrl(key);
+    const url = await this.r2Service.getSignedUrl(key);
+    return {
+      url,
+    };
   }
 
-  async followUser(followerId: string, followedId: string) {
+  async followUser(
+    followerId: string,
+    followedId: string,
+  ): Promise<FollowResponseDto> {
     if (followerId === followedId) {
       throw new BadRequestException("You can't follow yourself");
     }
@@ -130,7 +140,10 @@ export class UsersService {
     });
   }
 
-  async unfollowUser(followerId: string, followedId: string) {
+  async unfollowUser(
+    followerId: string,
+    followedId: string,
+  ): Promise<FollowResponseDto> {
     return this.prisma.userFollow.delete({
       where: { followerId_followedId: { followerId, followedId } },
     });
@@ -143,6 +156,7 @@ export class UsersService {
     });
 
     return follows.map((f) => f.followed);
+    // omit password hash
   }
 
   async getFollowers(userId: string) {
@@ -152,9 +166,10 @@ export class UsersService {
     });
 
     return followers.map((f) => f.follower);
+    //omit password hash
   }
 
-  async getFollowCounts(userId: string) {
+  async getFollowCounts(userId: string): Promise<FollowCountsResponse> {
     const [followers, following] = await Promise.all([
       this.prisma.userFollow.count({ where: { followedId: userId } }),
       this.prisma.userFollow.count({ where: { followerId: userId } }),
@@ -163,11 +178,7 @@ export class UsersService {
     return { followers, following };
   }
 
-  async searchUsers(query: SearchUsersDto): Promise<{
-    data: UserSearchResultDto[];
-    hasNextPage: boolean;
-    nextCursor?: string;
-  }> {
+  async searchUsers(query: SearchUsersDto): Promise<SearchResponseDto> {
     const { q, cursor, limit = 10 } = query;
 
     const where: Prisma.UserWhereInput | undefined = q

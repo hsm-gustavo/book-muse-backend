@@ -23,6 +23,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageUploadInterceptor } from './interceptors/image-upload.interceptor';
 import { SearchUsersDto } from './dto/search-users.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('users')
 export class UsersController {
@@ -38,6 +39,7 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getMe(@CurrentUser() user: User) {
@@ -54,12 +56,14 @@ export class UsersController {
     return this.usersService.findById(id);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Patch('me')
   async updateUser(@CurrentUser() user: User, @Body() dto: UpdateUserDto) {
     return this.usersService.update(user.id, dto);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Patch('me/profile-picture')
   @UseInterceptors(FileInterceptor('file'), ImageUploadInterceptor)
@@ -70,13 +74,14 @@ export class UsersController {
     return this.usersService.uploadFile(file, user);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('me/profile-picture')
   async getProfilePictureUrl(@CurrentUser() user: User) {
-    const url = await this.usersService.getProfilePictureSignedUrl(user.id);
-    return { url };
+    return this.usersService.getProfilePictureSignedUrl(user.id);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Delete('me')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -84,12 +89,14 @@ export class UsersController {
     return this.usersService.delete(user.id);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post(':userId/follow')
   follow(@Param('userId') userId: string, @CurrentUser() user: User) {
     return this.usersService.followUser(user.id, userId);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Delete(':userId/unfollow')
   unfollow(@Param('userId') userId: string, @CurrentUser() user: User) {

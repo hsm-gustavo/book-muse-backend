@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { randomBytes } from 'crypto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { User } from 'generated/prisma';
+import { TokenResponseDto } from './dto/token-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -50,10 +51,7 @@ export class AuthService {
     return token;
   }
 
-  async refresh(refreshTokenDto: RefreshTokenDto): Promise<{
-    accessToken: string;
-    refreshToken: string;
-  }> {
+  async refresh(refreshTokenDto: RefreshTokenDto): Promise<TokenResponseDto> {
     const stored = await this.prisma.refreshToken.findUnique({
       where: { token: refreshTokenDto.refreshToken },
       include: { user: true },
@@ -85,7 +83,7 @@ export class AuthService {
     };
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto): Promise<TokenResponseDto> {
     let isValid = false;
 
     const user = await this.prisma.user.findUnique({
