@@ -1,21 +1,50 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Review, User } from 'generated/prisma';
 
-export class ReviewDto {
+class AuthorDto {
+  @ApiProperty()
   id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty({ nullable: true })
+  profilePicture?: string | null;
+}
+
+export class ReviewDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
   title: string;
+
+  @ApiProperty()
   description: string;
+
+  @ApiProperty()
   rating: number;
+
+  @ApiProperty()
   openLibraryId: string;
+
+  @ApiProperty()
   createdAt: Date;
+
+  @ApiProperty()
   updatedAt: Date;
+
+  @ApiProperty()
   likeCount: number;
+
+  @ApiProperty()
   likedByMe: boolean;
 
-  author: {
-    id: string;
-    name: string;
-    profilePicture?: string | null;
-  } | null;
+  @ApiProperty({
+    nullable: true,
+    type: () => AuthorDto,
+  })
+  author: AuthorDto | null;
 
   constructor(input: {
     review: Review & { user: User | null };
