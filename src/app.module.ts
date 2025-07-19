@@ -16,6 +16,7 @@ import { AuthModule } from './auth/auth.module';
 import { StorageModule } from './storage/storage.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { ReadingStatusModule } from './reading-status/reading-status.module';
+import { PlaceholderModule } from './placeholder/placeholder.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { ReadingStatusModule } from './reading-status/reading-status.module';
     StorageModule,
     ReviewsModule,
     ReadingStatusModule,
+    PlaceholderModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
