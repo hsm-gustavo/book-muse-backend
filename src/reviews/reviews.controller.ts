@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
@@ -23,6 +24,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ReviewDto } from './dto/review.dto';
+import { ReviewsQueryDto } from './dto/reviews-query.dto';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -35,10 +37,12 @@ export class ReviewsController {
     return this.reviewsService.createReview(user.id, dto);
   }
 
-  @ApiOkResponse({ type: [ReviewDto] })
   @Get('book/:openLibraryId')
-  async listReviewsByBook(@Param('openLibraryId') bookId: string) {
-    return this.reviewsService.getReviewsByBook(bookId);
+  async listReviewsByBook(
+    @Param('openLibraryId') bookId: string,
+    @Query() query: ReviewsQueryDto,
+  ) {
+    return this.reviewsService.getReviewsByBook(bookId, query);
   }
 
   @ApiOkResponse({ type: [ReviewDto] })
