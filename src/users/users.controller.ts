@@ -23,8 +23,16 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageUploadInterceptor } from './interceptors/image-upload.interceptor';
 import { SearchUsersDto } from './dto/search-users.dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiParam,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { FollowQueryDto } from './dto/follow-query.dto';
+import { OptionalJwtAuthGuard } from 'src/auth/guards/optional-jwt-auth.guard';
+import { FullUserProfileDto } from './dto/full-user-profile.dto';
 
 @Controller('users')
 export class UsersController {
@@ -123,5 +131,25 @@ export class UsersController {
   @Get(':userId/follow-counts')
   async getFollowCounts(@Param('userId') userId: string) {
     return this.usersService.getFollowCounts(userId);
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @Get(':userId/full-profile')
+  @ApiParam({
+    name: 'userId',
+    description: 'ID of the user whose profile you want to fetch',
+  })
+  @ApiOkResponse({
+    description:
+      'Returns the full user profile including counts and optional isFollowing/recentReviews.',
+    type: FullUserProfileDto,
+  })
+  @ApiUnauthorizedResponse({ description: 'JWT is invalid (if provided)' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  async getFullUserProfile(
+    @Param('userId') userId: string,
+    @CurrentUser() viewer?: User,
+  ) {
+    return this.usersService.getFullUserProfile(userId, viewer?.id);
   }
 }

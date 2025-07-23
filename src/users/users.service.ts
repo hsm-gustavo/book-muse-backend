@@ -1,6 +1,8 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -20,13 +22,19 @@ import { FollowCountsResponse } from './dto/follow-counts-response.dto';
 import { FollowQueryDto } from './dto/follow-query.dto';
 import { FollowingPaginationDto } from './dto/following-pagination.dto';
 import { FollowersPaginationDto } from './dto/followers-pagination.dto';
+import { FullUserProfileDto } from './dto/full-user-profile.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly hashingService: HashingService,
     private readonly r2Service: R2Service,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
@@ -264,5 +272,103 @@ export class UsersService {
 
     const data = users.map((u) => new UserSearchResultDto(u));
     return { data, nextCursor, hasNextPage };
+  }
+
+  async getFullUserProfile(
+    userId: string,
+    viewerId?: string,
+  ): Promise<FullUserProfileDto> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        profilePicture: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const cacheKey = `user:profile:${userId}`;
+    const cachedCounts = await this.cacheManager.get<{
+      followersCount: number;
+      followingCount: number;
+      readBooksCount: number;
+    }>(cacheKey);
+
+    let followersCount: number;
+    let followingCount: number;
+    let readBooksCount: number;
+
+    if (cachedCounts) {
+      this.logger.debug(`Cache hit for profile counts of user ${userId}`);
+      ({ followersCount, followingCount, readBooksCount } = cachedCounts);
+    } else {
+      this.logger.debug(`Cache miss for profile counts of user ${userId}`);
+      [followersCount, followingCount, readBooksCount] = await Promise.all([
+        this.prisma.userFollow.count({ where: { followedId: userId } }),
+        this.prisma.userFollow.count({ where: { followerId: userId } }),
+        this.prisma.userBookStatus.count({
+          where: { userId, status: 'read' },
+        }),
+      ]);
+
+      await this.cacheManager.set(
+        cacheKey,
+        { followersCount, followingCount, readBooksCount },
+        30,
+      );
+    }
+
+    let isFollowing: boolean | undefined = undefined;
+    if (viewerId) {
+      const viewerCacheKey = `user:${viewerId}:follows:${userId}`;
+      const cachedFollow = await this.cacheManager.get<boolean>(viewerCacheKey);
+
+      if (cachedFollow !== undefined) {
+        this.logger.debug(
+          `Cache hit for follow status: ${viewerId} → ${userId}`,
+        );
+        isFollowing = cachedFollow;
+      } else {
+        const follow = await this.prisma.userFollow.findUnique({
+          where: {
+            followerId_followedId: {
+              followerId: viewerId,
+              followedId: userId,
+            },
+          },
+        });
+
+        isFollowing = !!follow;
+        await this.cacheManager.set(viewerCacheKey, isFollowing, 30);
+      }
+    }
+
+    const recentReviews = await this.prisma.review.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        title: true,
+        rating: true,
+        description: true,
+        createdAt: true,
+      },
+    });
+
+    return {
+      ...user,
+      followersCount,
+      followingCount,
+      readBooksCount,
+      isFollowing,
+      recentReviews,
+    };
   }
 }
