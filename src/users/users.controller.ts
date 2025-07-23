@@ -24,6 +24,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageUploadInterceptor } from './interceptors/image-upload.interceptor';
 import { SearchUsersDto } from './dto/search-users.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { FollowQueryDto } from './dto/follow-query.dto';
 
 @Controller('users')
 export class UsersController {
@@ -104,13 +105,19 @@ export class UsersController {
   }
 
   @Get(':userId/following')
-  getFollowing(@Param('userId') userId: string) {
-    return this.usersService.getFollowing(userId);
+  getFollowing(
+    @Param('userId') userId: string,
+    @Query() query: FollowQueryDto,
+  ) {
+    return this.usersService.getFollowing(userId, query);
   }
 
   @Get(':userId/followers')
-  getFollowers(@Param('userId') userId: string) {
-    return this.usersService.getFollowers(userId);
+  getFollowers(
+    @Param('userId') userId: string,
+    @Query() query: FollowQueryDto,
+  ) {
+    return this.usersService.getFollowers(userId, query);
   }
 
   @Get(':userId/follow-counts')

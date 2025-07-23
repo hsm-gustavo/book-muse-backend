@@ -17,6 +17,9 @@ import { GetSignedUrlDto } from './dto/get-signed-url.dto';
 import { SearchResponseDto } from './dto/search-response.dto';
 import { FollowResponseDto } from './dto/follow-response.dto';
 import { FollowCountsResponse } from './dto/follow-counts-response.dto';
+import { FollowQueryDto } from './dto/follow-query.dto';
+import { FollowingPaginationDto } from './dto/following-pagination.dto';
+import { FollowersPaginationDto } from './dto/followers-pagination.dto';
 
 @Injectable()
 export class UsersService {
@@ -149,24 +152,63 @@ export class UsersService {
     });
   }
 
-  async getFollowing(userId: string) {
+  async getFollowing(
+    userId: string,
+    query: FollowQueryDto,
+  ): Promise<FollowingPaginationDto> {
+    const { cursor, limit = 10 } = query;
+
+    const take = limit + 1;
+
     const follows = await this.prisma.userFollow.findMany({
       where: { followerId: userId },
+      take,
       include: { followed: true },
+      cursor: cursor ? { followerId_followedId: cursor } : undefined,
+      skip: cursor ? 1 : undefined,
     });
 
-    return follows.map((f) => f.followed);
-    // omit password hash
+    let nextCursor:
+      | {
+          followerId: string;
+          followedId: string;
+        }
+      | undefined = undefined;
+    const hasNextPage = follows.length > limit;
+
+    if (hasNextPage) {
+      const next = follows.pop()!;
+      nextCursor = { followerId: next.followerId, followedId: next.followedId };
+    }
+
+    const data = follows.map((f) => f.followed);
+
+    return { data, nextCursor, hasNextPage };
   }
 
-  async getFollowers(userId: string) {
+  async getFollowers(
+    userId: string,
+    query: FollowQueryDto,
+  ): Promise<FollowersPaginationDto> {
+    const { cursor, limit = 10 } = query;
+
+    const take = limit + 1;
+
     const followers = await this.prisma.userFollow.findMany({
       where: { followedId: userId },
+      take,
       include: { follower: true },
+      cursor: cursor ? { followerId_followedId: cursor } : undefined,
+      skip: cursor ? 1 : undefined,
     });
 
-    return followers.map((f) => f.follower);
-    //omit password hash
+    const nextCursor: { followerId: string; followedId: string } | undefined =
+      undefined;
+    const hasNextPage = followers.length > limit;
+
+    const data = followers.map((f) => f.follower);
+
+    return { data, nextCursor, hasNextPage };
   }
 
   async getFollowCounts(userId: string): Promise<FollowCountsResponse> {

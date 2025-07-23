@@ -10,6 +10,8 @@ import { ReviewDto } from './dto/review.dto';
 import { RawReviewDto } from './dto/book-review.dto';
 import { ReviewsQueryDto } from './dto/reviews-query.dto';
 import { PaginatedReviewsDto } from './dto/paginated-book-reviews.dto';
+import { UpdateReviewResponseDto } from './dto/update-review-response.dto';
+import { DeleteReviewResponseDto } from './dto/delete-review-response.dto';
 
 @Injectable()
 export class ReviewsService {
@@ -114,7 +116,11 @@ export class ReviewsService {
     });
   }
 
-  async updateReview(userId: string, reviewId: string, dto: UpdateReviewDto) {
+  async updateReview(
+    userId: string,
+    reviewId: string,
+    dto: UpdateReviewDto,
+  ): Promise<UpdateReviewResponseDto> {
     const review = await this.prisma.review.findUnique({
       where: { id: reviewId },
     });
@@ -129,7 +135,10 @@ export class ReviewsService {
     });
   }
 
-  async deleteReview(userId: string, reviewId: string) {
+  async deleteReview(
+    userId: string,
+    reviewId: string,
+  ): Promise<DeleteReviewResponseDto> {
     const review = await this.prisma.review.findUnique({
       where: { id: reviewId },
     });
