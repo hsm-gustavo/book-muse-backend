@@ -15,7 +15,6 @@ import { Prisma, User } from 'generated/prisma';
 import { SearchUsersDto } from './dto/search-users.dto';
 import { UserSearchResultDto } from './dto/user-search-result.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
-import { GetSignedUrlDto } from './dto/get-signed-url.dto';
 import { SearchResponseDto } from './dto/search-response.dto';
 import { FollowResponseDto } from './dto/follow-response.dto';
 import { FollowCountsResponse } from './dto/follow-counts-response.dto';
@@ -108,6 +107,10 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
+    if (user.profilePicture) {
+      await this.r2Service.deleteFileByUrl(user.profilePicture);
+    }
+
     await this.prisma.user.delete({
       where: { id },
     });
@@ -122,20 +125,6 @@ export class UsersService {
 
     const url = await this.r2Service.uploadFile(file.buffer, file.originalname);
     return this.update(user.id, { profilePicture: url });
-  }
-
-  async getProfilePictureSignedUrl(userId: string): Promise<GetSignedUrlDto> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user?.profilePicture) return { url: null };
-
-    const key = this.r2Service.getKeyFromUrl(user.profilePicture);
-    const url = await this.r2Service.getSignedUrl(key);
-    return {
-      url,
-    };
   }
 
   async followUser(

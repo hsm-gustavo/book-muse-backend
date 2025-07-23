@@ -25,8 +25,11 @@ import { ImageUploadInterceptor } from './interceptors/image-upload.interceptor'
 import { SearchUsersDto } from './dto/search-users.dto';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiParam,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -39,11 +42,13 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create a new user' })
   async createUser(@Body() dto: CreateUserDto) {
     return this.usersService.create(dto);
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all users' })
   async getAllUsers() {
     return this.usersService.findAll();
   }
@@ -51,16 +56,20 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('me')
+  @ApiOperation({ summary: 'Get authenticated user profile' })
   async getMe(@CurrentUser() user: User) {
-    return this.usersService.findById(user.id);
+    return this.usersService.getFullUserProfile(user.id, user.id);
   }
 
   @Get('search')
+  @ApiOperation({ summary: 'Search for users' })
   async searchUsers(@Query() query: SearchUsersDto) {
     return this.usersService.searchUsers(query);
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get a user by ID' })
+  @ApiNotFoundResponse({ description: 'User not found' })
   async getUserById(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.usersService.findById(id);
   }
@@ -68,6 +77,7 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Patch('me')
+  @ApiOperation({ summary: 'Update authenticated user profile' })
   async updateUser(@CurrentUser() user: User, @Body() dto: UpdateUserDto) {
     return this.usersService.update(user.id, dto);
   }
@@ -76,6 +86,19 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Patch('me/profile-picture')
   @UseInterceptors(FileInterceptor('file'), ImageUploadInterceptor)
+  @ApiOperation({ summary: 'Update profile picture' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   async updateProfilePicture(
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser() user: User,
@@ -85,15 +108,9 @@ export class UsersController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  @Get('me/profile-picture')
-  async getProfilePictureUrl(@CurrentUser() user: User) {
-    return this.usersService.getProfilePictureSignedUrl(user.id);
-  }
-
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Delete('me')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete authenticated user' })
   async deleteUser(@CurrentUser() user: User) {
     return this.usersService.delete(user.id);
   }
@@ -101,6 +118,8 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post(':userId/follow')
+  @ApiOperation({ summary: 'Follow another user' })
+  @ApiParam({ name: 'userId', type: 'string' })
   follow(@Param('userId') userId: string, @CurrentUser() user: User) {
     return this.usersService.followUser(user.id, userId);
   }
@@ -108,11 +127,15 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Delete(':userId/unfollow')
+  @ApiOperation({ summary: 'Unfollow a user' })
+  @ApiParam({ name: 'userId', type: 'string' })
   unfollow(@Param('userId') userId: string, @CurrentUser() user: User) {
     return this.usersService.unfollowUser(user.id, userId);
   }
 
   @Get(':userId/following')
+  @ApiOperation({ summary: 'List users a given user is following' })
+  @ApiParam({ name: 'userId', type: 'string' })
   getFollowing(
     @Param('userId') userId: string,
     @Query() query: FollowQueryDto,
@@ -121,6 +144,8 @@ export class UsersController {
   }
 
   @Get(':userId/followers')
+  @ApiOperation({ summary: 'List followers of a given user' })
+  @ApiParam({ name: 'userId', type: 'string' })
   getFollowers(
     @Param('userId') userId: string,
     @Query() query: FollowQueryDto,
@@ -129,6 +154,8 @@ export class UsersController {
   }
 
   @Get(':userId/follow-counts')
+  @ApiOperation({ summary: 'Get follow/following counts for a user' })
+  @ApiParam({ name: 'userId', type: 'string' })
   async getFollowCounts(@Param('userId') userId: string) {
     return this.usersService.getFollowCounts(userId);
   }
