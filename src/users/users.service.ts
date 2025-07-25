@@ -309,7 +309,7 @@ export class UsersService {
       await this.cacheManager.set(
         cacheKey,
         { followersCount, followingCount, readBooksCount },
-        30,
+        30 * 1000,
       );
     }
 
@@ -334,7 +334,7 @@ export class UsersService {
         });
 
         isFollowing = !!follow;
-        await this.cacheManager.set(viewerCacheKey, isFollowing, 30);
+        await this.cacheManager.set(viewerCacheKey, isFollowing, 30 * 1000);
       }
     }
 
