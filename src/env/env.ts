@@ -13,6 +13,7 @@ export const envSchema = z.object({
   R2_ACCESS_KEY: z.string(),
   R2_SECRET_KEY: z.string(),
   R2_BUCKET: z.string(),
+  R2_PUBLIC_URL: z.string().url(),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -1,6 +1,5 @@
 import {
   DeleteObjectCommand,
-  GetObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -9,7 +8,6 @@ import { extname } from 'path';
 import { EnvService } from 'src/env/env.service';
 import { v4 as uuid } from 'uuid';
 import { lookup } from 'mime-types';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 @Injectable()
 export class R2Service {
@@ -47,7 +45,7 @@ export class R2Service {
 
     await this.s3.send(command);
 
-    const url = `${this.envService.get('R2_ENDPOINT')}/${this.bucket}/${filename}`;
+    const url = `${this.envService.get('R2_PUBLIC_URL')}/${filename}`;
 
     return url;
   }
@@ -63,8 +61,7 @@ export class R2Service {
 
   async deleteFileByUrl(url: string): Promise<void> {
     try {
-      const baseUrl = `${this.envService.get('R2_ENDPOINT')}/${this.bucket}/`;
-      const key = url.replace(baseUrl, '');
+      const key = this.getKeyFromUrl(url);
 
       const command = new DeleteObjectCommand({
         Bucket: this.bucket,
@@ -77,21 +74,8 @@ export class R2Service {
     }
   }
 
-  async getSignedUrl(key: string, expiresInSeconds = 60 * 10): Promise<string> {
-    const command = new GetObjectCommand({
-      Bucket: this.bucket,
-      Key: key.replace('/', ''),
-    });
-
-    const signedUrl = await getSignedUrl(this.s3, command, {
-      expiresIn: expiresInSeconds,
-    });
-
-    return signedUrl;
-  }
-
   getKeyFromUrl(url: string): string {
-    const baseUrl = `${this.envService.get('R2_ENDPOINT')}/${this.bucket}`;
-    return url.replace(baseUrl, '');
+    const baseUrl = this.envService.get('R2_PUBLIC_URL');
+    return url.replace(`${baseUrl}/`, '');
   }
 }

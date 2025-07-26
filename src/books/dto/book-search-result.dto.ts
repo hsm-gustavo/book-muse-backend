@@ -50,7 +50,6 @@ export class BookSearchResultDto {
           ),
         );
         edition = res.data;
-        console.log('API RESPONSE:', edition);
         await cache.set(cacheKey, edition, 60 * 60); // 1h
       } catch {
         edition = null;

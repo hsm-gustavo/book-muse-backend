@@ -47,7 +47,9 @@ export class ReviewDto {
   author: AuthorDto | null;
 
   constructor(input: {
-    review: Review & { user: User | null };
+    review: Omit<Review, 'user'> & {
+      user: Pick<User, 'id' | 'name' | 'profilePicture'> | null;
+    };
     likeCount: number;
     likedByMe: boolean;
   }) {
