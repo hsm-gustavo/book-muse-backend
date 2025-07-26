@@ -45,10 +45,12 @@ export class ReviewsController {
     return this.reviewsService.getReviewsByBook(bookId, query);
   }
 
-  @ApiOkResponse({ type: [ReviewDto] })
   @Get('user/:userId')
-  async listUserReviews(@Param('userId') userId: string) {
-    return this.reviewsService.getReviewsByUser(userId);
+  async listUserReviews(
+    @Param('userId') userId: string,
+    @Query() query: ReviewsQueryDto,
+  ) {
+    return this.reviewsService.getReviewsByUser(userId, query);
   }
 
   @ApiBearerAuth()

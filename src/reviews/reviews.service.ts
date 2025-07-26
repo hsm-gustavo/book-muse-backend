@@ -12,6 +12,8 @@ import { ReviewsQueryDto } from './dto/reviews-query.dto';
 import { PaginatedReviewsDto } from './dto/paginated-book-reviews.dto';
 import { UpdateReviewResponseDto } from './dto/update-review-response.dto';
 import { DeleteReviewResponseDto } from './dto/delete-review-response.dto';
+import { UserReviewDto } from './dto/user-review.dto';
+import { PaginatedUserReviewsDto } from './dto/paginated-user-review.dto';
 
 @Injectable()
 export class ReviewsService {
@@ -68,12 +70,40 @@ export class ReviewsService {
     return { data, nextCursor, hasNextPage };
   }
 
-  async getReviewsByUser(userId: string) {
-    return this.prisma.review.findMany({
+  async getReviewsByUser(
+    userId: string,
+    query: ReviewsQueryDto,
+  ): Promise<PaginatedUserReviewsDto> {
+    const { cursor, limit = 10 } = query;
+
+    const take = limit + 1;
+
+    const reviews = await this.prisma.review.findMany({
       where: { userId },
+      take,
       orderBy: { createdAt: 'desc' },
-      include: { likes: true },
+      include: {
+        likes: {
+          select: {
+            userId: true,
+          },
+        },
+      },
+      cursor: cursor ? { id: cursor } : undefined,
+      skip: cursor ? 1 : undefined,
     });
+
+    let nextCursor: string | undefined = undefined;
+    const hasNextPage = reviews.length > limit;
+
+    if (hasNextPage) {
+      const next = reviews.pop()!;
+      nextCursor = next.id;
+    }
+
+    const data = reviews.map((review) => new UserReviewDto(review));
+
+    return { data, nextCursor, hasNextPage };
   }
 
   async getReviewById(reviewId: string, userId?: string) {
