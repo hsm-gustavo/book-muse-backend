@@ -105,23 +105,23 @@ pnpx prisma migrate dev --name init
 pnpm start:dev
 ```
 
-API will be available at `http://localhost:<PORT>`
+API will be available at `http://localhost:<PORT>/api/v1`
 
 ---
 
 ## 🔍 Key Endpoints
 
-- `POST /auth/login`
+- `POST /auth`
 - `POST /auth/refresh`
 - `POST /auth/logout`
 - `GET /users/:id`
 - `GET /users/search?query=...&take=...&cursor=...`
 - `GET /users/:id/followers`
 - `GET /users/:id/following`
-- `POST /follow/:userId`
-- `POST /unfollow/:userId`
+- `POST /users/:userId/follow`
+- `DELETE /users/:userId/unfollow`
 - `GET /reviews/:id`
-- `GET /reviews/user/:userId`
+- `GET /reviews/user/:userId?cursor=...&limit=...`
 - `POST /reviews`
 - `PATCH /reviews/:id`
 - `DELETE /reviews/:id`
@@ -130,6 +130,9 @@ API will be available at `http://localhost:<PORT>`
 - `GET /reading-status`
 - `POST /reading-status`
 - `PATCH /reading-status/:id`
+- `GET /placeholder/:width/:height?text=...&format=...`
+
+Access `http://localhost:<PORT>/api/v1/docs` for a more detailed Swagger documentation of all endpoints
 
 ---
 
