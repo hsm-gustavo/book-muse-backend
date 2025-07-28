@@ -199,9 +199,14 @@ export class UsersService {
       skip: cursor ? 1 : undefined,
     });
 
-    const nextCursor: { followerId: string; followedId: string } | undefined =
+    let nextCursor: { followerId: string; followedId: string } | undefined =
       undefined;
     const hasNextPage = followers.length > limit;
+
+    if (hasNextPage) {
+      const next = followers.pop()!;
+      nextCursor = { followerId: next.followerId, followedId: next.followedId };
+    }
 
     const data = followers.map((f) => f.follower);
 
