@@ -9,11 +9,9 @@ import { UserProfileDto } from './dto/user-profile.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PrismaClient, Role, User } from 'generated/prisma';
+import { Role, User } from 'generated/prisma';
 import { FollowResponseDto } from './dto/follow-response.dto';
 import { UserSearchResultDto } from './dto/user-search-result.dto';
-import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
-import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
 import { prismaMock } from 'src/singleton';
 
 /* const prismaMock = {
