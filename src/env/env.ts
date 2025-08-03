@@ -14,6 +14,10 @@ export const envSchema = z.object({
   R2_SECRET_KEY: z.string(),
   R2_BUCKET: z.string(),
   R2_PUBLIC_URL: z.string().url(),
+  MAIL_USER: z.string().email(),
+  MAIL_PASS: z.string(),
+  MAIL_HOST: z.string(),
+  MAIL_PORT: z.coerce.number(),
 });
 
 export type Env = z.infer<typeof envSchema>;

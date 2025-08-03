@@ -17,6 +17,7 @@ import { StorageModule } from './storage/storage.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { ReadingStatusModule } from './reading-status/reading-status.module';
 import { PlaceholderModule } from './placeholder/placeholder.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { PlaceholderModule } from './placeholder/placeholder.module';
     ReviewsModule,
     ReadingStatusModule,
     PlaceholderModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
