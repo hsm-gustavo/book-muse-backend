@@ -34,7 +34,6 @@ export default tseslint.config(
         { argsIgnorePattern: '^_' },
       ],
       '@typescript-eslint/unbound-method': 'off',
-      'jest/unbound-method': 'error',
     },
   },
 );

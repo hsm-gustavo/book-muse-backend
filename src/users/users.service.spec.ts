@@ -290,7 +290,7 @@ describe('UsersService', () => {
       };
       const response: UserResponseDto = {
         id: updatedUser.id,
-        name: updatedUser.name!,
+        name: updatedUser.name,
         email: updatedUser.email,
         profilePicture: updatedUser.profilePicture,
         createdAt: updatedUser.createdAt,
@@ -329,7 +329,7 @@ describe('UsersService', () => {
         id: updatedUser.id,
         name: updatedUser.name,
         email: updatedUser.email,
-        profilePicture: updatedUser.profilePicture!,
+        profilePicture: updatedUser.profilePicture,
         createdAt: updatedUser.createdAt,
         updatedAt: updatedUser.updatedAt,
       };
@@ -457,7 +457,6 @@ describe('UsersService', () => {
 
       const result = await service.uploadFile(mockFile, mockUser);
 
-      //eslint-disable-next-line
       expect(service.findById).toHaveBeenCalledWith(id);
       expect(r2Mock.deleteFileByUrl).toHaveBeenCalledWith(
         uniqueUser.profilePicture,
@@ -509,7 +508,6 @@ describe('UsersService', () => {
 
       const result = await service.uploadFile(mockFile, mockUser);
 
-      //eslint-disable-next-line
       expect(service.findById).toHaveBeenCalledWith(id);
       expect(r2Mock.deleteFileByUrl).toHaveBeenCalledTimes(0);
       expect(r2Mock.uploadFile).toHaveBeenCalledWith(
